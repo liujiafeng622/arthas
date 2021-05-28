@@ -1,6 +1,8 @@
 logger
 ===
 
+[`logger` online tutorial](https://arthas.aliyun.com/doc/arthas-tutorials?language=en&id=command-logger)
+
 > Print the logger information, update the logger level
 
 ### Usage
@@ -96,6 +98,10 @@ In the `appenders` section:
 
 #### View logger information for the special classloader
 
+Note that the hashcode changes, you need to check the current ClassLoader information first, and extract the hashcode corresponding to the ClassLoader.
+
+if you use`-c`, you have to manually type hashcode by `-c <hashcode>`.
+
 ```bash
 [arthas@2062]$ logger -c 2a139a55
  name                                   ROOT
@@ -123,11 +129,29 @@ In the `appenders` section:
                                         appenderRef     [APPLICATION]
 ```
 
+For classloader with only one instance, it can be specified by `--classLoaderClass` using class name, which is more convenient to use.
+
+`logger  --classLoaderClass sun.misc.Launcher$AppClassLoader`
+
+  * PS: Here the classLoaderClass in java 8 is sun.misc.Launcher$AppClassLoader, while in java 11 it's jdk.internal.loader.ClassLoaders$AppClassLoader.
+
+The value of `--classloaderclass` is the class name of classloader. It can only work when it matches a unique classloader instance. The purpose is to facilitate the input of general commands. However, `-c <hashcode>` is dynamic.
+
 #### Update logger level
 
 ```bash
 [arthas@2062]$ logger --name ROOT --level debug
 update logger level success.
+```
+
+#### Speecify classloader to update logger level
+
+By default，logger command will be executed under SystemClassloader, if the application is a traditional `war`, or using spring boot fat jar, then it needs to specify classloader。
+
+You can first use `sc -d yourClassName` to check specified classloader hashcode，then specify classloader when updating logger level:
+
+```bash
+[arthas@2062]$ logger -c 2a139a55 --name ROOT --level debug
 ```
 
 #### View the logger information without appenders
